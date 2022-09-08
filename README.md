@@ -1,7 +1,7 @@
 Master_Thesis
 ==============================
 
-None
+This is my master thesis :)
 
 Project Organization
 ------------
