@@ -59,19 +59,16 @@ def create_dataset(start,end,subreddit,name,limit,check_point):
         df=data_prep_posts(subreddit,start_get,end_get,limit,api)
         df.to_csv("./data/raw/" + name + ".csv", mode='a', index=False, header=False)
         # wait 1 second to avoid rate limit
-        sleep(1)
+        sleep(0.2)
 
 
-
-
-
-start=dt.datetime(year=2013, month=1, day=1)
+start=dt.datetime(year=2015, month=1, day=1)
 end=dt.datetime(year=2022, month=1, day=1)
 
 create_dataset(
             start=start,
             end=end,
-            subreddit='wallstreetbets',
-            name='wallstreetbets_2018_2022', # File name!
+            subreddit='jazznoir',
+            name='jazznoir_2015_2022', # File name!
             limit=None,
-            check_point=True)
+            check_point=False)
