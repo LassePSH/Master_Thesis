@@ -2,16 +2,27 @@ Ideas:
     Echo chambers:
         - Polarizing effects
         - Do people stay in the same circle.
+        - central person. "leader".
+            - reputation and network centrality
     Popularity:
         - what makes a "good" post.
     Complex network:
         - small comunities 
         - Central persons
-    Trends
+    Trends:
         - Qanon / trump supportes
         - GME - wallstreetbets
         - Egyptian revolution
         - Isreal/Palestine 
+    Good Communities:
+        - find metric for a "good" community
+            - robustnes (chapter 8 network book)
+                - percolation
+                - compare with qualitative data. Eg. posts, known good comm. vs bad comm. 
+            - avg shortest path
+        - scrape multiple sides -> find best community
+
+
 
 Small subreddits:
     - https://www.reddit.com/r/neography/ 
