@@ -10,10 +10,11 @@ Ideas:
         - small comunities 
         - Central persons
     Trends:
-        - Qanon / trump supportes
+        - Qanon / trump supporters
         - GME - wallstreetbets
         - Egyptian revolution
         - Isreal/Palestine 
+        - Iran movement
     Good Communities:
         - find metric for a "good" community
             - robustnes (chapter 8 network book)
@@ -46,3 +47,10 @@ Small subreddits:
 
     - https://www.reddit.com/r/GraphTheory/
         - 1520 users
+
+
+To do:
+- TF IDF
+- Latex setup
+- more subreddits!
+    - compare reddits
