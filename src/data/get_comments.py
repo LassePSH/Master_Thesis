@@ -13,7 +13,7 @@ def get_reddit_instance():
     return reddit
 
 def empty_file(file_name):
-    pd.DataFrame(columns=['post_id','parent_id','author','id','body','created']).to_csv("./data/raw/" + file_name + ".csv", index=False, header=True)
+    pd.DataFrame(columns=['post_id','parent_id','author','id','body','created','score']).to_csv("./data/raw/" + file_name + ".csv", index=False, header=True)
 
 # read posts data
 def read_posts(subreddit_file_name):
@@ -23,7 +23,7 @@ def read_posts(subreddit_file_name):
 
 # get comments
 def get_comments_from_id(id,file_name):
-    cache_dict = {'post_id':[],'parent_id':[],'author':[],'id':[],'body':[],'created':[]}
+    cache_dict = {'post_id':[],'parent_id':[],'author':[],'id':[],'body':[],'created':[],'score':[]}
     
     submission = reddit.submission(id=id)
     submission.comments.replace_more(limit=None)
@@ -37,6 +37,7 @@ def get_comments_from_id(id,file_name):
         cache_dict['id'].append(comment.id)
         cache_dict['body'].append(comment.body)
         cache_dict['created'].append(comment.created_utc)
+        cache_dict['score'].append(comment.score)
     
 
         comment_queue.extend(comment.replies)
@@ -45,7 +46,7 @@ def get_comments_from_id(id,file_name):
 
 
 ### MAIN ###
-comments_file_name = 'jazznoir_2015_2022_comments' # new file name
+comments_file_name = 'jazznoir_2015_2022_comments2' # new file name
 posts_file_name = 'jazznoir_2015_2022' # old file name
 
 # reddit instance
