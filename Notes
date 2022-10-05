@@ -16,11 +16,14 @@ Ideas:
         - Isreal/Palestine 
         - Iran movement
     Good Communities:
-        - find metric for a "good" community
-            - robustness (chapter 8 network book)
-                - percolation
-                - compare with qualitative data. Eg. posts, known good comm. vs bad comm. 
-            - avg shortest path
+        - find metric for a "good" community.
+            - double edge swap vs cluster coeficient, p value
+            - size, date, degree, etc
+            - mean upvotes corolations
+            - average period
+            - mean posts
+            - weight of graphs
+            - how many links are reciprocal
         - scrape multiple sides -> find best community
 
 
@@ -51,7 +54,10 @@ Small subreddits:
 
 To do:
 - more subreddits!
-    - compare reddits
+    - compare subreddits
+- temporal networks
+
+
 
 
 
