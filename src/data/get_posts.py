@@ -27,21 +27,21 @@ def data_prep_posts(subreddit, start_time, end_time,  limit,api):
     return pd.DataFrame([thing.d_ for thing in posts])
 
 
-def create_dataset(start,end,subreddit,name,limit,check_point):
-    if name == None: name = subreddit
+def download_posts(start,end,subreddit,folder_name,file_name,limit,check_point):
+    if file_name == None: file_name = subreddit
 
     if check_point:
         print('Continuing from last checkpoint..')
-        current_df = pd.read_csv("./data/raw/" + name + ".csv")
+        current_df = pd.read_csv("./data/raw/" + folder_name + '/' + file_name + ".csv")
         current_df.columns = ['author','created_utc','domain','id','n_comments','text','title','url','date']
         current_df = convert_utc_to_date(current_df)
         start = current_df.date.max()
     else: 
         print('Starting from scratch..')
-        pd.DataFrame().to_csv("./data/raw/" + name + ".csv", index=False, header=False)
+        pd.DataFrame().to_csv("./data/raw/" + folder_name + '/' + file_name + ".csv", index=False, header=False)
     
     delta = end - start
-    print('Downloading to..: ', name+'.csv')
+    print('Downloading to..: ', file_name+'.csv')
     print('Start date: ' + str(start))
     print('End date: ' + str(end))
     print('Subreddit: ' + subreddit)
@@ -57,18 +57,6 @@ def create_dataset(start,end,subreddit,name,limit,check_point):
         end_get=int((start+d_n).timestamp())
         
         df=data_prep_posts(subreddit,start_get,end_get,limit,api)
-        df.to_csv("./data/raw/" + name + ".csv", mode='a', index=False, header=False)
+        df.to_csv("./data/raw/" + folder_name + '/' +  file_name + ".csv", mode='a', index=False, header=False)
         # wait 1 second to avoid rate limit
         sleep(0.2)
-
-
-start=dt.datetime(year=2015, month=1, day=1)
-end=dt.datetime(year=2022, month=1, day=1)
-
-create_dataset(
-            start=start,
-            end=end,
-            subreddit='jazznoir',
-            name='jazznoir_2015_2022', # File name!
-            limit=None,
-            check_point=False)

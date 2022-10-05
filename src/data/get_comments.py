@@ -12,17 +12,17 @@ def get_reddit_instance():
                                 user_agent="Scrapper")
     return reddit
 
-def empty_file(file_name):
-    pd.DataFrame(columns=['post_id','parent_id','author','id','body','created','score']).to_csv("./data/raw/" + file_name + ".csv", index=False, header=True)
+def empty_file(file_name,folder_name):
+    pd.DataFrame(columns=['post_id','parent_id','author','id','body','created','score']).to_csv("./data/raw/" + folder_name + '/' + file_name + ".csv", index=False, header=True)
 
 # read posts data
-def read_posts(subreddit_file_name):
-    posts_df = pd.read_csv("./data/raw/"+ subreddit_file_name + ".csv")
+def read_posts(subreddit_file_name ,folder_name):
+    posts_df = pd.read_csv("./data/raw/" + folder_name + '/' + subreddit_file_name + ".csv")
     posts_df.columns = ['author','created_utc','domain','id','n_comments','text','title','url','date']
     return posts_df
 
 # get comments
-def get_comments_from_id(id,file_name):
+def get_comments_from_id(id,file_name,folder_name,reddit):
     cache_dict = {'post_id':[],'parent_id':[],'author':[],'id':[],'body':[],'created':[],'score':[]}
     
     submission = reddit.submission(id=id)
@@ -42,24 +42,16 @@ def get_comments_from_id(id,file_name):
 
         comment_queue.extend(comment.replies)
     
-    pd.DataFrame(cache_dict).to_csv("./data/raw/" + file_name + ".csv", mode='a', index=False, header=False)
+    pd.DataFrame(cache_dict).to_csv("./data/raw/" + folder_name + '/' + file_name + ".csv", mode='a', index=False, header=False)
 
 
 ### MAIN ###
-comments_file_name = 'jazznoir_2015_2022_comments2' # new file name
-posts_file_name = 'jazznoir_2015_2022' # old file name
-
-# reddit instance
-reddit=get_reddit_instance()
-
-# create enmpty file
-empty_file(comments_file_name)
-
-# read posts
-posts_df=read_posts(posts_file_name)
-
-# get comments
-print('Getting comments...')
-print('from: ', posts_file_name+'.csv')
-print('to: ', comments_file_name+'.csv')
-posts_df.id.progress_apply(lambda x: get_comments_from_id(x,comments_file_name))
+def download_comments(posts_file_name,comments_file_name,folder_name):
+    print("Starting reddit instance...")
+    reddit = get_reddit_instance()
+    print("Reading posts...")
+    posts_df = read_posts(posts_file_name,folder_name)
+    print("Creating empty file...")
+    empty_file(comments_file_name,folder_name)
+    print("Getting comments...")
+    posts_df['id'].progress_apply(lambda x: get_comments_from_id(x,comments_file_name,folder_name,reddit))
