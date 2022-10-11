@@ -18,7 +18,7 @@ def empty_file(file_name,folder_name):
 # read posts data
 def read_posts(subreddit_file_name ,folder_name):
     posts_df = pd.read_csv("./data/raw/" + folder_name + '/' + subreddit_file_name + ".csv")
-    posts_df.columns = ['author','created_utc','domain','id','n_comments','text','title','url','date']
+    posts_df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date']
     return posts_df
 
 # get comments

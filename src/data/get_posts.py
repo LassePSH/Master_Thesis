@@ -14,7 +14,7 @@ def convert_utc_to_date(df):
 def data_prep_posts(subreddit, start_time, end_time,  limit,api):
     filters = ['id', 'author', 'created_utc',
                 'domain', 'url',
-                'title', 'num_comments','selftext']                 
+                'title', 'num_comments','selftext', 'score']                 
                 #We set by default some useful columns
 
     posts = list(api.search_submissions(
@@ -33,7 +33,7 @@ def download_posts(start,end,subreddit,folder_name,file_name,limit,check_point):
     if check_point:
         print('Continuing from last checkpoint..')
         current_df = pd.read_csv("./data/raw/" + folder_name + '/' + file_name + ".csv")
-        current_df.columns = ['author','created_utc','domain','id','n_comments','text','title','url','date']
+        current_df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date']
         current_df = convert_utc_to_date(current_df)
         start = current_df.date.max()
     else: 

@@ -15,6 +15,7 @@ Ideas:
         - Egyptian revolution
         - Isreal/Palestine 
         - Iran movement
+        - stated in "LOOC" paper. Good comminuties interact with less popular content and creates new trends togheter
     Good Communities:
         - find metric for a "good" community.
             - double edge swap vs cluster coeficient, p value
@@ -50,11 +51,18 @@ Small subreddits:
 
     - https://www.reddit.com/r/GraphTheory/
         - 1520 users
+    
+    - https://www.reddit.com/r/Trump666/
+        - 2k
+
+    - https://www.reddit.com/r/FourSentenceStories/
+        - 300
 
 
 To do:
 - more subreddits!
     - compare subreddits
+        - plot the networks as in "loyalty on online communities"
 - temporal networks
 
 
@@ -64,7 +72,7 @@ To do:
 
 
 
-Snip
+<!-- Snip for data gathering
 
 tstart=dt.datetime(year=2015, month=1, day=1)
 tend=dt.datetime(year=2022, month=1, day=1)
@@ -78,4 +86,4 @@ while period_start < tend:
     periods.append((period_start.timestamp(), period_end.timestamp()))
     period_start = period_end
 
-print(periods[0])
+print(periods[0]) -->
