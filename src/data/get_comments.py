@@ -1,57 +1,72 @@
+from time import sleep
 import pandas as pd
-import praw
-# from time import sleep
 from tqdm import tqdm
-tqdm.pandas(desc="Getting comments")
+from psaw import PushshiftAPI
+import datetime as dt
+import warnings
+warnings.filterwarnings("ignore")
 
 
-# Read-only instance
-def get_reddit_instance():
-    reddit = praw.Reddit(client_id="OlWj7Mu4aXh0eg",
-                                client_secret="fIzRhpEeBYAwi8_i2hcyzoWwDnWOag",
-                                user_agent="Scrapper")
-    return reddit
+def get_periods(tstart, tend, interval):
+    periods = []
 
-def empty_file(file_name,folder_name):
-    pd.DataFrame(columns=['post_id','parent_id','author','id','body','created','score']).to_csv("./data/raw/" + folder_name + '/' + file_name + ".csv", index=False, header=True)
+    period_start = tstart
+    while period_start < tend:
+        period_end = min(period_start + interval, tend)
+        periods.append((
+            int(period_start.timestamp()), 
+            int(period_end.timestamp())
+            ))
+        period_start = period_end
 
-# read posts data
-def read_posts(subreddit_file_name ,folder_name):
-    posts_df = pd.read_csv("./data/raw/" + folder_name + '/' + subreddit_file_name + ".csv")
-    posts_df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date']
-    return posts_df
+    return periods
 
-# get comments
-def get_comments_from_id(id,file_name,folder_name,reddit):
-    cache_dict = {'post_id':[],'parent_id':[],'author':[],'id':[],'body':[],'created':[],'score':[]}
+
+def convert_utc_to_date(df):
+    df['date'] = pd.to_datetime(df['created_utc'],unit='s')
+    return df
+
+def download_comments(start,end,subreddit,folder_name,file_name,limit,check_point):
+
+    def data_prep_comments(subreddit, start_time, end_time, filters, limit):
+        if (len(filters) == 0):
+            filters = ['id', 'author', 'created_utc',
+                    'body', 'subreddit','score','parent_id','post_id']
+                    #We set by default some usefull columns 
+
+        comments = list(api.search_comments(
+            subreddit=subreddit,    #Subreddit we want to audit
+            after=start_time,       #Start date
+            before=end_time,        #End date
+            filter=filters,         #Column names we want to retrieve
+            limit=limit))           #Max number of comments
+        return pd.DataFrame([thing.d_ for thing in comments]) #Return dataframe for analysis
+
+
+    if file_name == None: file_name = subreddit
+
+    if check_point:
+        print('Continuing from last checkpoint..')
+        current_df = pd.read_csv("./data/raw/" + folder_name + '/' + file_name + ".csv")
+        current_df.columns = ['author', 'body', 'created_utc', 'id', 'parent_id','score', 'subreddit', 'created']
+        current_df = convert_utc_to_date(current_df)
+        start = current_df.created.max()
+    else: 
+        print('Starting from scratch..')
+        pd.DataFrame().to_csv("./data/raw/" + folder_name + '/' + file_name + ".csv", index=False, header=False)
     
-    submission = reddit.submission(id=id)
-    submission.comments.replace_more(limit=None)
-    comment_queue = submission.comments[:] 
-    while comment_queue:
-        comment = comment_queue.pop(0)
-
-        cache_dict['post_id'].append(id)
-        cache_dict['parent_id'].append(comment.parent_id)
-        cache_dict['author'].append(comment.author)
-        cache_dict['id'].append(comment.id)
-        cache_dict['body'].append(comment.body)
-        cache_dict['created'].append(comment.created_utc)
-        cache_dict['score'].append(comment.score)
+    print('Downloading to..: ', file_name+'.csv')
+    print('Start date: ' + str(start))
+    print('End date: ' + str(end))
+    print('Subreddit: ' + subreddit)
     
+    print('Setting up API..')
+    api = PushshiftAPI()
 
-        comment_queue.extend(comment.replies)
-    
-    pd.DataFrame(cache_dict).to_csv("./data/raw/" + folder_name + '/' + file_name + ".csv", mode='a', index=False, header=False)
+    periods = get_periods(start, end, dt.timedelta(days=2))
 
-
-### MAIN ###
-def download_comments(posts_file_name,comments_file_name,folder_name):
-    print("Starting reddit instance...")
-    reddit = get_reddit_instance()
-    print("Reading posts...")
-    posts_df = read_posts(posts_file_name,folder_name)
-    print("Creating empty file...")
-    empty_file(comments_file_name,folder_name)
-    print("Getting comments...")
-    posts_df['id'].progress_apply(lambda x: get_comments_from_id(x,comments_file_name,folder_name,reddit))
+    for period in tqdm(periods):
+        df_c = data_prep_comments(subreddit, start_time=period[0], end_time=period[1], filters=[], limit=limit)
+        df_c.to_csv("./data/raw/" + folder_name + '/' +  file_name + ".csv", mode='a', index=False, header=False)
+        # wait N second to avoid rate limit
+        sleep(2)

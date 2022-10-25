@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def convert_utc_to_date(df):
-    df['date'] = pd.to_datetime(df['created_utc'],unit='s')
+    df['date'] = pd.to_datetime(df['date'],unit='s')
     return df
 
 def data_prep_posts(subreddit, start_time, end_time,  limit,api):
@@ -34,6 +34,7 @@ def download_posts(start,end,subreddit,folder_name,file_name,limit,check_point):
         print('Continuing from last checkpoint..')
         current_df = pd.read_csv("./data/raw/" + folder_name + '/' + file_name + ".csv")
         current_df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date']
+        current_df.drop(current_df.loc[current_df['date'].apply(lambda x: isinstance(x, str))].index, inplace=True)
         current_df = convert_utc_to_date(current_df)
         start = current_df.date.max()
     else: 
@@ -58,5 +59,5 @@ def download_posts(start,end,subreddit,folder_name,file_name,limit,check_point):
         
         df=data_prep_posts(subreddit,start_get,end_get,limit,api)
         df.to_csv("./data/raw/" + folder_name + '/' +  file_name + ".csv", mode='a', index=False, header=False)
-        # wait 1 second to avoid rate limit
+        # wait N second to avoid rate limit
         sleep(0.2)
