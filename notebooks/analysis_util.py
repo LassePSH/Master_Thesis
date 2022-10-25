@@ -9,7 +9,6 @@ def read_posts(path):
     df.drop(df.loc[df['author']=='[deleted]'].index, inplace=True)
     return df
 
-
 def read_comments(path):
     df_comments=pd.read_csv(path)
     df_comments['date'] = pd.to_datetime(df_comments['created'],unit='s')
@@ -177,11 +176,11 @@ def reciprocal_edges(G_di):
 
 
 def get_authors(G,df_all_nodes,df_comments,df,df_comment_post):
+    print(2)
     df_authors=df_all_nodes.set_index('author')
     # df_authors = df_authors.join(df_karma.set_index('author'))
     df_authors = df_authors.join(pd.concat([df[['author','score']],df_comments[['author','score']]]).groupby('author').mean()['score'].rename('sum_score'))
     df_authors = df_authors.join(pd.concat([df[['author','score']],df_comments[['author','score']]]).groupby('author').sum()['score'].rename('mean_score'))
-
     # df_authors = df_authors.join(pd.DataFrame(df_comments.groupby('author')['score'].sum()).rename('sum_score_comments'))
     # df_authors = df_authors.join(pd.DataFrame(df_comments.groupby('author')['score'].mean().rename('mean_score_comment')))
 
