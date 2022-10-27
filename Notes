@@ -70,24 +70,6 @@ To do:
 - temporal networks
 
 
+corr plots center at 0!
 
-
-
-
-
-
-<!-- Snip for data gathering
-
-tstart=dt.datetime(year=2015, month=1, day=1)
-tend=dt.datetime(year=2022, month=1, day=1)
-interval = dt.timedelta(days=30)
-
-periods = []
-
-period_start = tstart
-while period_start < tend:
-    period_end = min(period_start + interval, tend)
-    periods.append((period_start.timestamp(), period_end.timestamp()))
-    period_start = period_end
-
-print(periods[0]) -->
+medium networks good correlation

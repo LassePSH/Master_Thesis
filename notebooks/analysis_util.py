@@ -4,13 +4,30 @@ import networkx as nx
 def read_posts(path):
     df=pd.read_csv(path)
     df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date']
-    df['date'] = pd.to_datetime(df['date'],unit='s')
+    l = len(df)
+    def convert_to_int(x):
+        try:
+            return int(x)
+        except:
+            return x
+
+    
+    df['created_utc']=df.created_utc.apply(lambda x: convert_to_int(x))
+    # df['date']=df.date.apply(lambda x: convert_to_int(x))
+    df=df[df.created_utc.apply(lambda x: isinstance(x,int))]
+    df['created_utc'] = pd.to_datetime(df['created_utc'],unit='s')
     df['author'].dropna(inplace=True)
     df.drop(df.loc[df['author']=='[deleted]'].index, inplace=True)
+    print('Removed {} of the rows'.format( l/len(df)-1 ))
     return df
+
 
 def read_comments(path):
     df_comments=pd.read_csv(path)
+
+    if 'author' not in df_comments.columns:
+        df_comments.columns = ['author','text','created_utc','id','parent_id','score','subreddit','created']
+
     df_comments['date'] = pd.to_datetime(df_comments['created'],unit='s')
     df_comments['author'].dropna(inplace=True)
     return df_comments
@@ -62,7 +79,9 @@ def get_graph(df,df_comments,df_all_nodes):
                     if p_id in df['id'].unique():
                         if df.loc[df['id'] == p_id].author.values[0] in G.nodes:
 
-                            if G.has_edge(node, df.loc[df['id'] == p_id].author.values[0]): w = w + 1
+                            if G.has_edge(node, df.loc[df['id'] == p_id].author.values[0]): 
+                                w_c = G.edges[node, df.loc[df['id'] == p_id].author.values[0]]['weight']
+                                w = w_c + 1
                             else: w = 1
                             
                             G.add_edge(node, df.loc[df['id'] == p_id].author.values[0], weight=w)
@@ -72,7 +91,9 @@ def get_graph(df,df_comments,df_all_nodes):
                     if p_id in df_comments['id'].unique():
                         if df_comments.loc[df_comments['id'] == p_id].author.values[0] in G.nodes:
 
-                            if G.has_edge(node, df_comments.loc[df_comments['id'] == p_id].author.values[0]): w = w + 1
+                            if G.has_edge(node, df_comments.loc[df_comments['id'] == p_id].author.values[0]): 
+                                w_c = G.edges[node, df_comments.loc[df_comments['id'] == p_id].author.values[0]]['weight']
+                                w = w_c + 1
                             else: w = 1
 
                             G.add_edge(node, df_comments.loc[df_comments['id'] == p_id].author.values[0], weight=w)
@@ -176,11 +197,10 @@ def reciprocal_edges(G_di):
 
 
 def get_authors(G,df_all_nodes,df_comments,df,df_comment_post):
-    print(2)
     df_authors=df_all_nodes.set_index('author')
     # df_authors = df_authors.join(df_karma.set_index('author'))
-    df_authors = df_authors.join(pd.concat([df[['author','score']],df_comments[['author','score']]]).groupby('author').mean()['score'].rename('sum_score'))
-    df_authors = df_authors.join(pd.concat([df[['author','score']],df_comments[['author','score']]]).groupby('author').sum()['score'].rename('mean_score'))
+    df_authors = df_authors.join(pd.concat([df[['author','score']],df_comments[['author','score']]]).groupby('author').mean()['score'].rename('mean_score'))
+    df_authors = df_authors.join(pd.concat([df[['author','score']],df_comments[['author','score']]]).groupby('author').sum()['score'].rename('sum_score'))
     # df_authors = df_authors.join(pd.DataFrame(df_comments.groupby('author')['score'].sum()).rename('sum_score_comments'))
     # df_authors = df_authors.join(pd.DataFrame(df_comments.groupby('author')['score'].mean().rename('mean_score_comment')))
 
@@ -189,5 +209,4 @@ def get_authors(G,df_all_nodes,df_comments,df,df_comment_post):
     df_authors=pd.DataFrame.from_dict(dict(nx.betweenness_centrality(G)), orient='index', columns=['Betweenness Centrality']).join(df_authors)
     df_authors=pd.DataFrame.from_dict(dict(nx.degree_centrality(G)), orient='index', columns=['Degree Centrality']).join(df_authors)
     df_authors=pd.DataFrame.from_dict(dict(df_comment_post["author"].value_counts()), orient='index', columns=['Activity']).join(df_authors)
-
     return df_authors

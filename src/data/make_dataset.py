@@ -25,8 +25,8 @@ print('folder_name: ', folder_name)
 print('')
 
 # check if files exists
-if os.path.isfile("./data/raw/" + folder_name + '/' + post_file_name + ".csv"):
-    print('Post file already exists..')
+# if os.path.isfile("./data/raw/" + folder_name + '/' + post_file_name + ".csv"):
+#     print('Post file already exists..')
 #     print('changes file name to: ' + post_file_name + '_new.csv\n')
 #     post_file_name = post_file_name + '_new'
 
@@ -37,16 +37,16 @@ if os.path.isfile("./data/raw/" + folder_name + '/' + post_file_name + ".csv"):
 
 
 # ## fire up the engines
-print('Runnin get_posts..')
-get_posts.download_posts(
-            start=start,
-            end=end,
-            subreddit=subreddit,
-            folder_name=folder_name,
-            file_name=post_file_name,
-            limit=None,
-            check_point=True)
-print('Posts downloaded..\n')
+# print('Runnin get_posts..')
+# get_posts.download_posts(
+#             start=start,
+#             end=end,
+#             subreddit=subreddit,
+#             folder_name=folder_name,
+#             file_name=post_file_name,
+#             limit=None,
+#             check_point=True)
+# print('Posts downloaded..\n')
 
 print('Running get_comments..')
 get_comments.download_comments(
@@ -56,7 +56,7 @@ get_comments.download_comments(
             folder_name=folder_name,
             file_name=comments_file_name,
             limit=None,
-            check_point=False)
+            check_point=True)
 
 print('Comments downloaded..\n')
 print('DONE!')

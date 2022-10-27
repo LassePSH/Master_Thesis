@@ -23,7 +23,7 @@ def get_periods(tstart, tend, interval):
 
 
 def convert_utc_to_date(df):
-    df['date'] = pd.to_datetime(df['created_utc'],unit='s')
+    df['date'] = pd.to_datetime(df['created'],unit='s')
     return df
 
 def download_comments(start,end,subreddit,folder_name,file_name,limit,check_point):
@@ -48,9 +48,9 @@ def download_comments(start,end,subreddit,folder_name,file_name,limit,check_poin
     if check_point:
         print('Continuing from last checkpoint..')
         current_df = pd.read_csv("./data/raw/" + folder_name + '/' + file_name + ".csv")
-        current_df.columns = ['author', 'body', 'created_utc', 'id', 'parent_id','score', 'subreddit', 'created']
+        current_df.columns=['author', 'text', 'created_utc', 'id', 'parent_id', 'score','subreddit', 'created']
         current_df = convert_utc_to_date(current_df)
-        start = current_df.created.max()
+        start = current_df.date.max()
     else: 
         print('Starting from scratch..')
         pd.DataFrame().to_csv("./data/raw/" + folder_name + '/' + file_name + ".csv", index=False, header=False)

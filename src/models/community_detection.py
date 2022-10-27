@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import networkx as nx
+import datetime
 
 def read_posts(path):
     df=pd.read_csv(path)
@@ -13,6 +14,9 @@ def read_posts(path):
 
 def read_comments(path):
     df_comments=pd.read_csv(path)
+    if 'author' not in df_comments.columns:
+        df_comments.columns = ['author','text','created_utc','id','parent_id','score','subreddit','created']
+
     df_comments['date'] = pd.to_datetime(df_comments['created'],unit='s')
     df_comments['author'].dropna(inplace=True)
     return df_comments
@@ -64,7 +68,9 @@ def get_graph(df,df_comments,df_all_nodes):
                     if p_id in df['id'].unique():
                         if df.loc[df['id'] == p_id].author.values[0] in G.nodes:
 
-                            if G.has_edge(node, df.loc[df['id'] == p_id].author.values[0]): w = w + 1
+                            if G.has_edge(node, df.loc[df['id'] == p_id].author.values[0]): 
+                                w_c = G.edges[node, df.loc[df['id'] == p_id].author.values[0]]['weight']
+                                w = w_c + 1
                             else: w = 1
                             
                             G.add_edge(node, df.loc[df['id'] == p_id].author.values[0], weight=w)
@@ -74,7 +80,9 @@ def get_graph(df,df_comments,df_all_nodes):
                     if p_id in df_comments['id'].unique():
                         if df_comments.loc[df_comments['id'] == p_id].author.values[0] in G.nodes:
 
-                            if G.has_edge(node, df_comments.loc[df_comments['id'] == p_id].author.values[0]): w = w + 1
+                            if G.has_edge(node, df_comments.loc[df_comments['id'] == p_id].author.values[0]): 
+                                w_c = G.edges[node, df_comments.loc[df_comments['id'] == p_id].author.values[0]]['weight']
+                                w = w_c + 1
                             else: w = 1
 
                             G.add_edge(node, df_comments.loc[df_comments['id'] == p_id].author.values[0], weight=w)
@@ -169,7 +177,10 @@ def describe_graph(G):
     print('Number of nodes: ', len(G.nodes))
     print('Number of edges: ', len(G.edges))
     print('Average weight of edges: ', np.mean([G.edges[e]['weight'] for e in G.edges]))
+    print('Median weight of edges: ', np.median([G.edges[e]['weight'] for e in G.edges]))
     print('Average degree: ', np.mean([G.degree[n] for n in G.nodes]))
+    print('Median degree: ', np.median([G.degree[n] for n in G.nodes]))
+    print('Average clustering coefficient: ', nx.average_clustering(G))
 
 
 def reciprocal_edges(G_di):
@@ -213,10 +224,27 @@ G_di = get_DiGraph(df,df_comments,df_all_nodes)
 df_comment_post = get_comment_post_date(df_comments,df)
 df_authors = get_authors(G,df_all_nodes,df_comments,df_comment_post)
 
-print('Total Activity: ', len(df_comment_post)+len(df)) 
-describe_graph(G)
-print('Mean Activity: ', df_authors['Activity'].mean())
-print('Mean delta time: ', df_comment_post.groupby('author')['delta_time'].mean().mean())
-cluster_coefficient_swapped_pvalue(G)
-reciprocal_edges(G_di)
+# print('Total Activity: ', len(df_comment_post)+len(df)) 
+# describe_graph(G)
+# print('Mean Activity: ', df_authors['Activity'].mean())
+# print('Mean delta time: ', df_comment_post.groupby('author')['delta_time'].mean().mean())
+# cluster_coefficient_swapped_pvalue(G)
+# reciprocal_edges(G_di)
 
+pd.DataFrame({
+    'subreddit': [subreddit],
+    'version': [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
+    'period': [period],
+    'total_activity': [len(df_comment_post)+len(df)],
+    'number_of_nodes': [len(G.nodes)],
+    'number_of_edges': [len(G.edges)],
+    'average_weight_of_edges': [np.mean([G.edges[e]['weight'] for e in G.edges])],
+    'median_weight_of_edges': [np.median([G.edges[e]['weight'] for e in G.edges])],
+    'average_degree': [np.mean([G.degree[n] for n in G.nodes])],
+    'median_degree': [np.median([G.degree[n] for n in G.nodes])],
+    'average_clustering_coefficient': [nx.average_clustering(G)],
+    'mean_activity': [df_authors['Activity'].mean()],
+    'mean_delta_time': [df_comment_post.groupby('author')['delta_time'].mean().mean()],
+    'number_of_reciprocal_edges': [len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])])],
+    'fraction_of_reciprocal_edges': [len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])])/len(G_di.edges)]
+}).set_index('subreddit').to_csv('./data/processed/'+ 'community_metrics'+'.csv',mode='a',header=False)
