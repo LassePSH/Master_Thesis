@@ -1,9 +1,10 @@
 import pandas as pd
 import networkx as nx
+import datetime
 
 def read_posts(path):
     df=pd.read_csv(path)
-    df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date']
+    df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date_n']
     l = len(df)
     def convert_to_int(x):
         try:
@@ -11,14 +12,15 @@ def read_posts(path):
         except:
             return x
 
-    
     df['created_utc']=df.created_utc.apply(lambda x: convert_to_int(x))
     # df['date']=df.date.apply(lambda x: convert_to_int(x))
     df=df[df.created_utc.apply(lambda x: isinstance(x,int))]
     df['created_utc'] = pd.to_datetime(df['created_utc'],unit='s')
+    df = df[df['created_utc'].apply(lambda x: isinstance(x, datetime.datetime))]
     df['author'].dropna(inplace=True)
     df.drop(df.loc[df['author']=='[deleted]'].index, inplace=True)
     print('Removed {} of the rows'.format( l/len(df)-1 ))
+    df.rename(columns={'created_utc':'date'}, inplace=True)
     return df
 
 
@@ -30,6 +32,7 @@ def read_comments(path):
 
     df_comments['date'] = pd.to_datetime(df_comments['created'],unit='s')
     df_comments['author'].dropna(inplace=True)
+    df_comments = df_comments[df_comments['date'].apply(lambda x: isinstance(x, datetime.datetime))]
     return df_comments
 
 
@@ -154,7 +157,7 @@ def get_biggest_component(G):
 
 
 def get_comment_post_date(df_comments,df):
-    df_comment_post=pd.concat([df_comments[['date','author']],df[['date','author']]]).sort_values(by='date')
+    df_comment_post=pd.concat([df_comments[['date','author']],df[['date','author']]])
     df_comment_post.dropna(inplace=True) 
 
     def max_date(author):
@@ -165,6 +168,7 @@ def get_comment_post_date(df_comments,df):
         df_a=df_comment_post.loc[df_comment_post['author']==author]
         return df_a['date'].min()
 
+    df_comment_post = df_comment_post[df_comment_post['date'].apply(lambda x: isinstance(x, datetime.datetime))]
     df_comment_post['min_date'] = df_comment_post['author'].apply(lambda x: min_date(x))
     df_comment_post['max_date'] = df_comment_post['author'].apply(lambda x: max_date(x))
     df_comment_post['delta_time'] = df_comment_post['max_date'] - df_comment_post['min_date']

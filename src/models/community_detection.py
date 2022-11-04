@@ -7,6 +7,8 @@ def read_posts(path):
     df=pd.read_csv(path)
     df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date']
     df['date'] = pd.to_datetime(df['date'],unit='s')
+    # drop floats in date column
+    df = df[df['date'].apply(lambda x: isinstance(x, datetime.datetime))]
     df['author'].dropna(inplace=True)
     df.drop(df.loc[df['author']=='[deleted]'].index, inplace=True)
     return df
@@ -18,6 +20,8 @@ def read_comments(path):
         df_comments.columns = ['author','text','created_utc','id','parent_id','score','subreddit','created']
 
     df_comments['date'] = pd.to_datetime(df_comments['created'],unit='s')
+    # drop floats in date column
+    df_comments = df_comments[df_comments['date'].apply(lambda x: isinstance(x, datetime.datetime))]
     df_comments['author'].dropna(inplace=True)
     return df_comments
 
@@ -143,7 +147,8 @@ def get_biggest_component(G):
 
 
 def get_comment_post_date(df_comments,df):
-    df_comment_post=pd.concat([df_comments[['date','author']],df[['date','author']]]).sort_values(by='date')
+    df_comment_post=pd.concat([df_comments[['date','author']],df[['date','author']]])
+    df_comment_post['date']=pd.to_datetime(df_comment_post['date'])
     df_comment_post.dropna(inplace=True) 
 
     def max_date(author):
@@ -154,6 +159,7 @@ def get_comment_post_date(df_comments,df):
         df_a=df_comment_post.loc[df_comment_post['author']==author]
         return df_a['date'].min()
 
+    df_comment_post = df_comment_post[df_comment_post['date'].apply(lambda x: isinstance(x, datetime.datetime))]
     df_comment_post['min_date'] = df_comment_post['author'].apply(lambda x: min_date(x))
     df_comment_post['max_date'] = df_comment_post['author'].apply(lambda x: max_date(x))
     df_comment_post['delta_time'] = df_comment_post['max_date'] - df_comment_post['min_date']
@@ -170,22 +176,7 @@ def cluster_coefficient_swapped_pvalue(G):
     
     p_value = np.array(np.array(average_clustering) > nx.average_clustering(G)).sum() / len(average_clustering)
     
-    print('Clustering coefficient p-value: ', p_value)
-
-
-def describe_graph(G):
-    print('Number of nodes: ', len(G.nodes))
-    print('Number of edges: ', len(G.edges))
-    print('Average weight of edges: ', np.mean([G.edges[e]['weight'] for e in G.edges]))
-    print('Median weight of edges: ', np.median([G.edges[e]['weight'] for e in G.edges]))
-    print('Average degree: ', np.mean([G.degree[n] for n in G.nodes]))
-    print('Median degree: ', np.median([G.degree[n] for n in G.nodes]))
-    print('Average clustering coefficient: ', nx.average_clustering(G))
-
-
-def reciprocal_edges(G_di):
-    print('Number of reciprocal edges: ', len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])]))
-    print('Fraction of reciprocal edges: ', len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])])/len(G_di.edges))
+    return p_value
 
 
 def get_authors(G,df_all_nodes,df_comments,df_comment_post):
@@ -224,13 +215,6 @@ G_di = get_DiGraph(df,df_comments,df_all_nodes)
 df_comment_post = get_comment_post_date(df_comments,df)
 df_authors = get_authors(G,df_all_nodes,df_comments,df_comment_post)
 
-# print('Total Activity: ', len(df_comment_post)+len(df)) 
-# describe_graph(G)
-# print('Mean Activity: ', df_authors['Activity'].mean())
-# print('Mean delta time: ', df_comment_post.groupby('author')['delta_time'].mean().mean())
-# cluster_coefficient_swapped_pvalue(G)
-# reciprocal_edges(G_di)
-
 pd.DataFrame({
     'subreddit': [subreddit],
     'version': [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
@@ -246,5 +230,8 @@ pd.DataFrame({
     'mean_activity': [df_authors['Activity'].mean()],
     'mean_delta_time': [df_comment_post.groupby('author')['delta_time'].mean().mean()],
     'number_of_reciprocal_edges': [len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])])],
-    'fraction_of_reciprocal_edges': [len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])])/len(G_di.edges)]
+    'fraction_of_reciprocal_edges': [len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])])/len(G_di.edges)],
+    'clustering_coefficient_p_value': [cluster_coefficient_swapped_pvalue(G)]
 }).set_index('subreddit').to_csv('./data/processed/'+ 'community_metrics'+'.csv',mode='a',header=False)
+
+print('Done!')
