@@ -171,7 +171,7 @@ def cluster_coefficient_swapped_pvalue(G):
     average_clustering = []
     for i in range(1000):
         G_swapped = G.copy()
-        G_swapped = nx.double_edge_swap(G_swapped, nswap=len(G.nodes), max_tries=len(G.nodes)*2)
+        G_swapped = nx.double_edge_swap(G_swapped, nswap=len(G.nodes), max_tries=len(G.nodes)*5)
         average_clustering.append(nx.average_clustering(G_swapped))
     
     p_value = np.array(np.array(average_clustering) > nx.average_clustering(G)).sum() / len(average_clustering)

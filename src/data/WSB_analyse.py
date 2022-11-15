@@ -35,11 +35,11 @@ if get_graph_analysis:
     df_final = pd.DataFrame.from_dict(dict, orient='index', columns=['N_nodes', 'N_edges', 'mean_degree', 'clustering_coefficient'])
     df_final.to_csv(df_path)
 
-    df_final = pd.read_csv(df_path)
-    df_final['date'] = pd.to_datetime(df_final['Unnamed: 0'])
-    df_final = df_final.set_index('date')
-    df_final.sort_index(inplace=True)
-    df_final = df_final.drop(columns=['Unnamed: 0'])
+    # df_final = pd.read_csv(df_path)
+    # df_final['date'] = pd.to_datetime(df_final['Unnamed: 0'])
+    # df_final = df_final.set_index('date')
+    # df_final.sort_index(inplace=True)
+    # df_final = df_final.drop(columns=['Unnamed: 0'])
 
     print("Done with graph analysis! " +'\n')
 
@@ -98,11 +98,12 @@ if not os.path.exists('/home/pelle/Master_Thesis/data/processed/wallstreetbets_s
 for file in tqdm(files):
     before = pd.to_datetime(file[-18:-8])
 
-    with open('/home/pelle/Master_Thesis/data/processed/wallstreetbets_temporal_graphs/'+folder_name+'/' +i, 'rb') as handle:
+    with open('/home/pelle/Master_Thesis/data/processed/wallstreetbets_temporal_graphs/'+folder_name+'/' +file, 'rb') as handle:
         G = pickle.load(handle)
 
-    degree_centrality = nx.degree_centrality(G)
-    betweenness_centrality = nx.betweenness_centrality(G)
+    # degree_centrality = nx.degree_centrality(G)
+    # betweenness_centrality = nx.betweenness_centrality(G)
+    clustering_coefficient = nx.clustering(G)
     degree = nx.degree(G)
 
     df_comments_before=df_comments.loc[df_comments.created_utc<before]   
@@ -115,9 +116,10 @@ for file in tqdm(files):
     df_score_before=s.join(m).join(n)
     df_score_before['date']=before
 
-    df_score_before['degree_centrality'] = df_score_before.index.map(degree_centrality)
-    df_score_before['betweenness_centrality'] = df_score_before.index.map(betweenness_centrality)
+    # df_score_before['degree_centrality'] = df_score_before.index.map(degree_centrality)
+    # df_score_before['betweenness_centrality'] = df_score_before.index.map(betweenness_centrality)
     df_score_before['degree'] = df_score_before.index.map(degree)
+    df_score_before['clustering_coefficient'] = df_score_before.index.map(clustering_coefficient)
 
     df_score_before.to_csv('/home/pelle/Master_Thesis/data/processed/wallstreetbets_scores/'+folder_name+'/df_score_before_'+str(before.date())+'.csv')
 
