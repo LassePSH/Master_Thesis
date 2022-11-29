@@ -58,8 +58,13 @@ else:
 
 start = df_comments.created_utc.min()
 period = df_comments.created_utc.max()-df_comments.created_utc.min()
+# start = dt.datetime.strptime('2018-11-1', '%Y-%m-%d')
+# period = dt.datetime.strptime('2019-11-1', '%Y-%m-%d') - dt.datetime.strptime('2018-11-1', '%Y-%m-%d')
 step = dt.timedelta(weeks=week)
 
+print('start: ', start)
+print('period: ', period)
+print('step: ', step)
 if windowed:
     print('Windowed')
     for i in tqdm(range(int(np.ceil(period / step)))):

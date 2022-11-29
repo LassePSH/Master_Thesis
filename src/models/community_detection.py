@@ -171,7 +171,7 @@ def cluster_coefficient_swapped_pvalue(G):
     average_clustering = []
     for i in range(1000):
         G_swapped = G.copy()
-        G_swapped = nx.double_edge_swap(G_swapped, nswap=len(G.nodes), max_tries=len(G.nodes)*5)
+        G_swapped = nx.double_edge_swap(G_swapped, nswap=len(G.nodes), max_tries=len(G.nodes)*50)
         average_clustering.append(nx.average_clustering(G_swapped))
     
     p_value = np.array(np.array(average_clustering) > nx.average_clustering(G)).sum() / len(average_clustering)
@@ -215,11 +215,13 @@ G_di = get_DiGraph(df,df_comments,df_all_nodes)
 df_comment_post = get_comment_post_date(df_comments,df)
 df_authors = get_authors(G,df_all_nodes,df_comments,df_comment_post)
 
+# print(str(df['date'].min())[:10] + ' - ' + str(df['date'].max())[:10])
+
 pd.DataFrame({
     'subreddit': [subreddit],
     'version': [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-    'period': [period],
-    'total_activity': [len(df_comment_post)+len(df)],
+    'period': [str(df['date'].min())[:10] + ' - ' + str(df['date'].max())[:10]],
+    'total_activity': [len(df_comments)+len(df)],
     'number_of_nodes': [len(G.nodes)],
     'number_of_edges': [len(G.edges)],
     'average_weight_of_edges': [np.mean([G.edges[e]['weight'] for e in G.edges])],

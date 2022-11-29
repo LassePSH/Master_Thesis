@@ -1,8 +1,9 @@
 import pandas as pd
 import networkx as nx
 import datetime
+import numpy as np
 
-def read_posts(path):
+def read_posts(path,path_awards):
     df=pd.read_csv(path)
     df.columns = ['author','created_utc','domain','id','n_comments','score','text','title','url','date_n']
     l = len(df)
@@ -21,10 +22,15 @@ def read_posts(path):
     df.drop(df.loc[df['author']=='[deleted]'].index, inplace=True)
     print('Removed {} of the rows'.format( l/len(df)-1 ))
     df.rename(columns={'created_utc':'date'}, inplace=True)
+
+    df_awards = pd.read_csv(path_awards)
+    df_awards['n_awards'].replace(np.nan, 0, inplace=True)
+    df['n_awards']=df_awards['n_awards']
+
     return df
 
 
-def read_comments(path):
+def read_comments(path,path_awards):
     df_comments=pd.read_csv(path)
 
     if 'author' not in df_comments.columns:
@@ -33,6 +39,11 @@ def read_comments(path):
     df_comments['date'] = pd.to_datetime(df_comments['created'],unit='s')
     df_comments['author'].dropna(inplace=True)
     df_comments = df_comments[df_comments['date'].apply(lambda x: isinstance(x, datetime.datetime))]
+
+    df_awards = pd.read_csv(path_awards)
+    df_awards['n_awards'].replace(np.nan, 0, inplace=True)
+    df_comments['n_awards']=df_awards['n_awards']
+
     return df_comments
 
 
@@ -207,6 +218,8 @@ def get_authors(G,df_all_nodes,df_comments,df,df_comment_post):
     df_authors = df_authors.join(pd.concat([df[['author','score']],df_comments[['author','score']]]).groupby('author').sum()['score'].rename('sum_score'))
     # df_authors = df_authors.join(pd.DataFrame(df_comments.groupby('author')['score'].sum()).rename('sum_score_comments'))
     # df_authors = df_authors.join(pd.DataFrame(df_comments.groupby('author')['score'].mean().rename('mean_score_comment')))
+    df_authors = df_authors.join(pd.concat([df[['author','n_awards']],df_comments[['author','n_awards']]]).groupby('author').mean()['n_awards'].rename('mean_awards'))
+    df_authors = df_authors.join(pd.concat([df[['author','n_awards']],df_comments[['author','n_awards']]]).groupby('author').sum()['n_awards'].rename('sum_awards'))
 
 
     df_authors=pd.DataFrame.from_dict(dict(G.degree()), orient='index', columns=['degree']).join(df_authors)
