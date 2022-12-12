@@ -225,5 +225,10 @@ def get_authors(G,df_all_nodes,df_comments,df,df_comment_post):
     df_authors=pd.DataFrame.from_dict(dict(G.degree()), orient='index', columns=['degree']).join(df_authors)
     df_authors=pd.DataFrame.from_dict(dict(nx.betweenness_centrality(G)), orient='index', columns=['Betweenness Centrality']).join(df_authors)
     df_authors=pd.DataFrame.from_dict(dict(nx.degree_centrality(G)), orient='index', columns=['Degree Centrality']).join(df_authors)
+    df_authors=pd.DataFrame.from_dict(dict(nx.closeness_centrality(G)), orient='index', columns=['Closeness Centrality']).join(df_authors)
+    df_authors=pd.DataFrame.from_dict(dict(nx.eigenvector_centrality(G)), orient='index', columns=['Eigenvector Centrality']).join(df_authors)
+    df_authors=pd.DataFrame.from_dict(dict(nx.clustering(G)), orient='index', columns=['Clustering Coefficient']).join(df_authors)
+    df_authors=pd.DataFrame.from_dict(dict(nx.average_neighbor_degree(G)), orient='index', columns=['Average Neighbor Degree']).join(df_authors)
+
     df_authors=pd.DataFrame.from_dict(dict(df_comment_post["author"].value_counts()), orient='index', columns=['Activity']).join(df_authors)
     return df_authors
