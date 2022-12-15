@@ -24,15 +24,15 @@ df_posts = pd.read_csv('/home/pelle/Downloads/submissions_pmaw_2016-2021_wsb.csv
 
 print('Done loading data..' )
 
-p = '/home/pelle/Master_Thesis/data/processed/wallstreetbets_scores/'
+p = '/home/pelle/Master_Thesis/awards/wallstreetbets/'
 # create new dataframe if not already created
-if not os.path.exists(p+'df_awards_post.csv'):
+if not os.path.exists(p+'awards_post.csv'):
     print('Creating new dataframe')
     df_id=pd.DataFrame()
-    df_id.to_csv(p+'df_awards_post.csv',index=False)
+    df_id.to_csv(p+'awards_post.csv',index=False)
     len_id = 0
 else: 
-    df_id=pd.read_csv(p+'df_awards_post.csv')
+    df_id=pd.read_csv(p+'awards_post.csv')
     len_id=len(df_id)
     print('starting from: ',len_id)
     df_id = None
@@ -52,8 +52,10 @@ def get_n_awards(id):
     submission_awards = []
     submission = reddit.submission(id=id)
     submission_awards.append(submission.all_awardings)
-    # get number of awards
-    return [len(x) for x in submission_awards]
+    y = 0
+    for a in submission_awards[0]:
+        y = y + a['count']
+    return y
 
 print('Lets go!!!')
 
@@ -62,7 +64,4 @@ for id in tqdm(df_posts['id'][len_id:]):
     # append to csv file
     N_awards = get_n_awards(id)
     df_awards = pd.DataFrame({'id':id,'N_awards':N_awards})
-    df_awards.to_csv(p+'df_awards_post.csv',mode='a',header=False,index=False)
-
-
-
+    df_awards.to_csv(p+'awards_post.csv',mode='a',header=False,index=False)
