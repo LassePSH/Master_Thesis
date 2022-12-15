@@ -48,4 +48,4 @@ print('Getting awards... '+'\n')
 df['n_awards'] = df['id'].progress_apply(get_n_awards)
 
 print('Saving data... '+'\n')
-df[['id','n_awards']].to_csv(path+subreddit+'_awards_comments.csv',index=False)
+df[['id','n_awards']].to_csv("/home/pelle/Master_Thesis/awards/"+subreddit+'_awards_comments.csv',index=False)
