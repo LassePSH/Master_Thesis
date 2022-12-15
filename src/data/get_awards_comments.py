@@ -27,8 +27,10 @@ def get_n_awards(id):
     comment_awards = []
     comment = reddit.comment(id=id)
     comment_awards.append(comment.all_awardings)
-    # get number of awards
-    return [len(x) for x in comment_awards][0]
+    y = 0
+    for a in comment_awards[0]:
+        y = y + a['count']
+    return y
 
 
 subreddit = input("subreddit: ")

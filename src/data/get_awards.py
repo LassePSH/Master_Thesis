@@ -26,8 +26,10 @@ def get_n_awards(id):
     submission_awards = []
     submission = reddit.submission(id=id)
     submission_awards.append(submission.all_awardings)
-    # get number of awards
-    return [len(x) for x in submission_awards][0]
+    y = 0
+    for a in submission_awards[0]:
+        y = y + a['count']
+    return y
 
 
 subreddit = input("subreddit: ")
