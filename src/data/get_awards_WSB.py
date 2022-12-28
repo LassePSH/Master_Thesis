@@ -11,6 +11,9 @@ import string
 input("Press Enter to start...")
 scrapper = input("scrapper1 (y/n): ")
 scrapper = scrapper == "y"
+hpc = input("hpc (y/n): ")
+hpc = hpc == "y"
+
 if scrapper:
     print('Using Scrapper')
 else: 
@@ -24,7 +27,10 @@ print('Starting on chunk ',start_chunk)
 
 
 print("Reading data...")
-sample = pd.read_csv('/home/pelle/Master_Thesis/data/raw/wallstreetbets/submissions_pmaw_2016-2021_wsb.csv',nrows=10)
+if hpc:
+    sample = pd.read_csv('/home/hpc/Master_Thesis/data/raw/wallstreetbets/submissions_pmaw_2016-2021_wsb.csv',nrows=10)
+else:
+    sample = pd.read_csv('/home/pelle/Master_Thesis/data/raw/wallstreetbets/submissions_pmaw_2016-2021_wsb.csv',nrows=10)
 dtypes = sample.dtypes # Get the dtypes
 cols = sample.columns # Get the columns
 dtype_dictionary = {} 
@@ -34,10 +40,17 @@ for c in cols:
     else:
         dtype_dictionary[c] = str(dtypes[c])
 
-df_posts = pd.read_csv('/home/pelle/Master_Thesis/data/raw/wallstreetbets/submissions_pmaw_2016-2021_wsb.csv',dtype=dtype_dictionary, 
+if hpc:
+    df_posts = pd.read_csv('/home/hpc/Master_Thesis/data/raw/wallstreetbets/submissions_pmaw_2016-2021_wsb.csv',dtype=dtype_dictionary, 
                 keep_default_na=False,
                 na_values=['na',''],
                 usecols=['id'])
+else:
+    df_posts = pd.read_csv('/home/pelle/Master_Thesis/data/raw/wallstreetbets/submissions_pmaw_2016-2021_wsb.csv',dtype=dtype_dictionary, 
+                    keep_default_na=False,
+                    na_values=['na',''],
+                    usecols=['id'])
+
 print('Done loading data..' )
 
 print('Getting current awards from dir...')
