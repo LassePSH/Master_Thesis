@@ -15,7 +15,7 @@ windowed = windowed == "y"
 
 print('Reading data...')
 
-sample = pd.read_csv('/home/pelle/Downloads/comments_pmaw_2016-2021_wsb.csv',nrows=10)
+sample = pd.read_csv('/home/pelle/Master_Thesis/data/raw/wallstreetbets/comments_pmaw_2016-2021_wsb.csv',nrows=10)
 dtypes = sample.dtypes # Get the dtypes
 cols = sample.columns # Get the columns
 dtype_dictionary = {} 
@@ -30,13 +30,14 @@ dtype_dictionary['parent_id'] = 'str'
 dtype_dictionary['link_id'] = 'str'
 dtype_dictionary['id'] = 'str'
 
+df_comments_chunked = pd.read_csv('/home/pelle/Master_Thesis/data/raw/wallstreetbets/comments_pmaw_2016-2021_wsb.csv', dtype=dtype_dictionary, 
+    on_bad_lines='skip',
+    chunksize=1000000,
+    low_memory=False,
+    usecols=['author','parent_author','created_utc','score'],
+    dtype=dtype_dictionary,
+    )
 
-df_comments_chunked = pd.read_csv('/home/pelle/Downloads/comments_pmaw_2016-2021_wsb.csv', dtype=dtype_dictionary, 
-                 keep_default_na=False, 
-                #  error_bad_lines=False,
-                 on_bad_lines='warn',
-                 na_values=['na',''],
-                 usecols=['author','parent_author','created_utc','score'],chunksize=1000000)
 df_comments = pd.concat(df_comments_chunked, ignore_index=True)
 df_comments.created_utc = pd.to_datetime(df_comments.created_utc,unit='s')
 
@@ -95,4 +96,3 @@ print('Done!')
 # to do:
 # - add weights to edges
 # - add directed edges
-

@@ -78,6 +78,9 @@ target/
 # exclude data from source control by default
 /data/
 
+# ssh scripts
+src/Heisenberg_SSH/
+
 # Mac OS-specific storage files
 .DS_Store
 
