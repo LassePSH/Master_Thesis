@@ -85,9 +85,26 @@ to detect rep if author is mentiond in a text
 divide users by activity by quantiles -
 error bars
 
-data chapter: descriptive analysis
-results: research qoustions
+HOW TO:
+- Introduction (Explain what you’re going to do)
+- Literature review (Write about what the field around your research looks like)
+- Dataset (Describe your dataset(s), including literature relevant to that dataset, if any)
+- Methods (Describe the tools you’ve used)
+- Results (Tell us what you have found)
+- Discussion (Comment on your results, explain what those results mean, interpret the results in a wider context. Also indicate which results were expected or unexpected, and provide an explanation for the unexpected results)
+- Conclusion (Summarize your findings, bring in perspectives)
 
-time
-13:30 - 3900 * 4 iterrations
-14:30 - 6000 * 4
+
+vejledning:
+- new data and model with graph features
+    - more data
+    - which models
+    - bigger period?
+    - other features?
+    - textual features
+- identity
+    - paper from L
+    - mentions in comments and posts in the periode
+- paper structure
+    - results or discussion
+- how to plot big newworks??
