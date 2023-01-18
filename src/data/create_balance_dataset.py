@@ -13,7 +13,7 @@ df_post = df_post[df_post['author'] != '[deleted]']
 
 # rename columns
 df_post.rename(columns={'created_utc':'date','num_comments':'n_comments','selftext':'text','id':'id','award_count':'n_awards'},inplace=True)
-df_post = df_post[['author','date','score','n_comments','title','text','id','n_awards','subreddit']]
+df_post = df_post[['author','date','score','n_comments','title','text','id','n_awards']]
 print('Posts loaded')
 
 len1=len(df_post.loc[df_post['n_awards'] > 0])
@@ -39,7 +39,6 @@ df_post_balanced['text'].fillna('', inplace=True)
 df_post_balanced['title'].fillna('', inplace=True)
 df_post_balanced['text'] = df_post_balanced['text'].astype(str)
 df_post_balanced['title'] = df_post_balanced['title'].astype(str)
-df_post_balanced['subreddit'] = df_post_balanced['subreddit'].astype(str)
 df_post_balanced['author'] = df_post_balanced['author'].astype(str)
 df_post_balanced['id'] = df_post_balanced['id'].astype(str)
 
@@ -55,4 +54,4 @@ df_post_balanced['pre_date'] = df_post_balanced['date']-pd.Timedelta(weeks=W)
 df_post_balanced['chunk'] = np.arange(len(df_post_balanced)) // (len(df_post_balanced)/N_c)
 
 #saving
-df_post_balanced.to_csv('balanced_data_chunked_'+str(N_c)+'.csv',index=False)
+df_post_balanced.to_csv('balanced_data_' + 'week_' +str(W) + '_chunked_'+str(N_c)+'.csv',index=False)

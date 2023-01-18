@@ -63,27 +63,6 @@ Small subreddits:
         - 300
 
 
-To do:
-- more subreddits!
-    - compare subreddits
-        - plot the networks as in "loyalty on online communities"
-        
-- temporal networks
-
-medium networks good correlation
-
-bots
-median
-
-what happend in 2019
-betwenes
-
-awards
-
-to detect rep if author is mentiond in a text 
-
-divide users by activity by quantiles -
-error bars
 
 HOW TO:
 - Introduction (Explain what you’re going to do)
@@ -95,16 +74,8 @@ HOW TO:
 - Conclusion (Summarize your findings, bring in perspectives)
 
 
-vejledning:
-- new data and model with graph features
-    - more data
-    - which models
-    - bigger period?
-    - other features?
-    - textual features
-- identity
-    - paper from L
-    - mentions in comments and posts in the periode
-- paper structure
-    - results or discussion
-- how to plot big newworks??
+to do!
+ - mentions vs graph size correlation
+ - look at text examples
+ - fix model, try input same features as basemodel
+ - write thesis
