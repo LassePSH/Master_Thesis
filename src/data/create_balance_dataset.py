@@ -4,12 +4,13 @@ import networkx as nx
 import datetime
 import os
 
-W = int(input('Week for period: '))
 N_c = int(input('Chunk number: '))
 
 p = '/home/pelle/Master_Thesis/data/raw/wallstreetbets/'
 df_post = pd.read_csv(p+'submissions_pmaw_2016-2021_wsb.csv',usecols=['author','created_utc','score','num_comments','title','selftext','id','award_count'])
 df_post = df_post[df_post['author'] != '[deleted]']
+df_post = df_post[df_post['author'] != 'AutoModerator']
+df_post = df_post.dropna(subset=['author'])
 
 # rename columns
 df_post.rename(columns={'created_utc':'date','num_comments':'n_comments','selftext':'text','id':'id','award_count':'n_awards'},inplace=True)
@@ -32,7 +33,6 @@ print('Balanced!')
 print('N post with awards: '+str(len(df_post_awarded)))
 print('N post with no awards: '+str(len(df_post_not_awarded)))
 
-
 # Cleaning
 df_post_balanced['date'] = pd.to_datetime(df_post_balanced['date'])
 df_post_balanced['text'].fillna('', inplace=True)
@@ -48,10 +48,11 @@ for char in ['\n','\r','\t']:
 df_post_balanced['text_title'] = df_post_balanced['title'] + ' ' + df_post_balanced['text']
 
 # getting predate!
-df_post_balanced['pre_date'] = df_post_balanced['date']-pd.Timedelta(weeks=W) 
+df_post_balanced['pre_date'] = df_post_balanced['date']-pd.Timedelta(weeks=10) 
 
 #makeing chunks
 df_post_balanced['chunk'] = np.arange(len(df_post_balanced)) // (len(df_post_balanced)/N_c)
 
 #saving
-df_post_balanced.to_csv('balanced_data_' + 'week_' +str(W) + '_chunked_'+str(N_c)+'.csv',index=False)
+df_post_balanced.to_csv('balanced_data_chunked'+str(N_c)+'.csv',index=False)
+print('Saved!')
