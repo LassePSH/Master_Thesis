@@ -13,37 +13,31 @@ class ElectraClassifier(nn.Module):
         self.dense_txt = nn.Linear(self.electra.config.hidden_size, self.electra.config.hidden_size) # 256
         self.dropout_txt = nn.Dropout(self.electra.config.hidden_dropout_prob)
 
-        # network features
-        self.network_input = nn.Linear(in_features=7,out_features=256) # 7 network features
-        self.dropout_net = nn.Dropout()
-
         # combined features
-        self.dense_cat1 = nn.Linear(in_features=512,out_features=1024) # 256 from text features + 256 from network features = 512
-        self.dense_cat2 = nn.Linear(in_features=1024,out_features=2048)
-        self.dense_cat3 = nn.Linear(in_features=2048,out_features=2048)
-        self.dense_cat4 = nn.Linear(in_features=2048,out_features=2048)
-        self.dropout_cat = nn.Dropout()
+        self.dense_cat1 = nn.Linear(in_features=(256+7),out_features=512) # 256 from text features + 7 from network features 
+        self.dense_cat2 = nn.Linear(in_features=512,out_features=1024)
+        self.dense_cat3 = nn.Linear(in_features=1024,out_features=2048)
+        self.dense_cat4 = nn.Linear(in_features=2048,out_features=1024)
+        self.dense_cat5 = nn.Linear(in_features=1024,out_features=512)
+        self.dense_cat6 = nn.Linear(in_features=512,out_features=256)
 
         # output layer
-        self.out_proj = nn.Linear(2048, self.num_labels)
+        self.out_proj = nn.Linear(256, self.num_labels) # 2 labels
 
     def classifier(self,sequence_output,network_features):
         # text features
-        x_txt = sequence_output[:, 0, :]
+        x_txt = sequence_output[:, 0, :] #[CLS] token
+        x_txt = F.relu(self.dense_txt(x_txt))
         x_txt = self.dropout_txt(x_txt)
-        x_txt = F.gelu(self.dense_txt(x_txt))
-
-        # network features
-        x_net = F.gelu(self.network_input(network_features))
-        x_net = self.dropout_net(x_net)
         
         # combined features
-        x = torch.cat((x_txt,x_net),dim=1) #256 from text features + 256 from network features = 512
-        x = F.gelu(self.dense_cat1(x))
-        x = F.gelu(self.dense_cat2(x))
-        x = F.gelu(self.dense_cat3(x))
-        x = F.gelu(self.dense_cat4(x))
-        x = self.dropout_cat(x)
+        x = torch.cat((x_txt,network_features),dim=1) 
+        x = F.relu(self.dense_cat1(x))
+        x = F.relu(self.dense_cat2(x))
+        x = F.relu(self.dense_cat3(x))
+        x = F.relu(self.dense_cat4(x))
+        x = F.relu(self.dense_cat5(x))
+        x = F.relu(self.dense_cat6(x))
 
         # output layer
         logits = self.out_proj(x)
@@ -53,4 +47,4 @@ class ElectraClassifier(nn.Module):
         discriminator_hidden_states = self.electra(input_ids=input_ids,attention_mask=attention_mask)
         sequence_output = discriminator_hidden_states[0]
         logits = self.classifier(sequence_output,network_features)
-        return logits
+        return F.softmax(logits,dim=1)
