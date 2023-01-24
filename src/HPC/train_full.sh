@@ -28,5 +28,6 @@ nvidia-smi
 module load cuda/11.6
 module load python3/3.9.14
 source ~/env/model_env/bin/activate
-
 python3 train_full.py
+
+

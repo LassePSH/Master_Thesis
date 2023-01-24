@@ -61,7 +61,17 @@ if full:
 
   df['sentiment_compound']=df['text_title'].apply(lambda x: get_sentiment(x))
   df['text_length']=df['text_title'].apply(lambda x: text_length(x))
+  df['sentiment_compound'] = df['sentiment_compound'].apply(lambda x: x/df['sentiment_compound'].max())
+  df['text_length'] = df['text_length'].apply(lambda x: x/df['text_length'].max())
 
+# normalize network features
+df['degree_cen'] = df['degree_cen'].apply(lambda x: x/df['degree_cen'].max())
+df['close_cen'] = df['close_cen'].apply(lambda x: x/df['close_cen'].max())
+df['activity'] = df['activity'].apply(lambda x: x/df['activity'].max())
+df['degree'] = df['degree'].apply(lambda x: x/df['degree'].max())
+df['N_nodes'] = df['N_nodes'].apply(lambda x: x/df['N_nodes'].max())
+df['N_edges'] = df['N_edges'].apply(lambda x: x/df['N_edges'].max())
+df['mentions'] = df['mentions'].apply(lambda x: x/df['mentions'].max())
 
 # shuffle order of df
 df = df.sample(frac = 1)
@@ -69,7 +79,6 @@ df = df.sample(frac = 1)
 print('Data loaded')
 print(df.shape)
 print()
-
 
 class Dataset():
   def __init__(self, texts, targets, tokenizer, max_len,network_features):
@@ -124,11 +133,6 @@ def create_dataloader(df, tokenizer, max_len, batch_size):
 
 tokenizer = AutoTokenizer.from_pretrained('google/electra-small-discriminator')
 
-train_dataloader = create_dataloader(df, tokenizer, 200, 20)
-print('Dataloader created')
-print(type(train_dataloader))
-print(iter(train_dataloader).next().keys())
-
 df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
 df_test, df_eval = train_test_split(df_test, test_size=0.5, random_state=42)
 
@@ -145,11 +149,11 @@ eval_dataloader = create_dataloader(df_eval, tokenizer, 200, 32)
 
 # save
 if full:
-  torch.save(train_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/train_dataloader_full.pt')
-  torch.save(test_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/test_dataloader_full.pt')
-  torch.save(eval_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/eval_dataloader_full.pt')
+  torch.save(train_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/train_dataloader_full_norm.pt')
+  torch.save(test_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/test_dataloader_full_norm.pt')
+  torch.save(eval_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/eval_dataloader_full_norm.pt')
 
 else: 
-  torch.save(train_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/train_dataloader.pt')
-  torch.save(test_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/test_dataloader.pt')
-  torch.save(eval_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/eval_dataloader.pt')
+  torch.save(train_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/train_dataloader_norm.pt')
+  torch.save(test_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/test_dataloader_norm.pt')
+  torch.save(eval_dataloader, '/home/pelle/Master_Thesis/data/processed/dataloaders/week10/eval_dataloader_norm.pt')

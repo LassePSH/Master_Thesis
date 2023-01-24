@@ -12,27 +12,38 @@ from sklearn.metrics import f1_score
 import torch 
 from torch import nn, optim
 import torch.nn.functional as F
+from transformers import AutoTokenizer
 from torch.utils.data import DataLoader
-
 import model_def as model_def
 import model_def_full as model_def_full
 from dataset_def import Dataset
 
-# load data
-eval_dataloader = torch.load('eval_dataloader_full.pt')
-train_dataloader = torch.load('train_dataloader_full.pt')
-test_dataloader = torch.load('test_dataloader_full.pt')
-
-# load model
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print('Device: ' + str(device))
-model = model_def_full.ElectraClassifier()
-model = model.to(device)
-
-# Set up optimizer and steps
+# init
+b_size = 64
 EPOCHS = 50
-total_steps = len(train_dataloader) * EPOCHS
-optimizer = optim.SGD(model.parameters(), lr=1e-2, momentum=0.5)
+learning_rate = 0.001
+
+# load data
+df_train = pd.read_csv('~/data/train_full.csv')
+df_test = pd.read_csv('~/data/test_full.csv')
+df_eval = pd.read_csv('~/data/eval_full.csv')
+
+print('Length of train data: ' + str(len(df_train)))
+print('Length of eval data: ' + str(len(df_eval)))
+print('Length of test data: ' + str(len(df_test)))
+print('Total data: ' + str(len(df_train) + len(df_eval) + len(df_test)))
+
+# create dataloader
+def create_dataloader(df, tokenizer, max_len, batch_size):
+
+    ds = Dataset(
+    network_features=df[['degree_cen', 'close_cen', 'activity', 'degree', 'N_nodes', 'N_edges','mentions','sentiment_compound','text_length']].to_numpy(),
+    texts=df["text_title"].to_numpy(),
+    targets=df['awarded'].to_numpy(),
+    tokenizer=tokenizer,
+    max_len=max_len)
+
+    return DataLoader(ds,batch_size=batch_size,num_workers=2)
 
 # evaluate model
 def eval_model(model, data_loader, device, n_examples):
@@ -45,7 +56,7 @@ def eval_model(model, data_loader, device, n_examples):
             network_features = d["network_features"].to(device)
 
             outputs = model(network_features=network_features)
-            loss = F.nll_loss(outputs, targets)      
+            loss = loss_fn(outputs, targets)      
             losses.append(loss.item())
 
             _, preds = torch.max(outputs, dim=1)
@@ -60,19 +71,21 @@ def train_epoch(model,data_loader,optimizer,device,n_examples):
     correct_predictions = 0
 
     for d in data_loader:
-        optimizer.zero_grad()
 
         targets = d["targets"].to(device)
         network_features = d["network_features"].to(device)
 
         outputs = model(network_features=network_features)
-        loss = F.nll_loss(outputs, targets)
+        
+        loss = loss_fn(outputs, targets)
         losses.append(loss.item())
-        loss.backward()
-        optimizer.step()
 
         _, preds = torch.max(outputs, dim=1)
         correct_predictions += torch.sum(preds == targets)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
     return correct_predictions.double() / n_examples, np.mean(losses)
 
@@ -136,41 +149,64 @@ def save_history(history):
     plt.savefig('history_loss.png')
     plt.show()
 
-##### MAIN #####
+def save_confusion_matrix(y_test, y_pred):
+    plt.figure(figsize=(10,8))
+    cm = confusion_matrix(y_test, y_pred)
+    hmap = sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+    hmap.yaxis.set_ticklabels(hmap.yaxis.get_ticklabels(), rotation=0, ha='right')
+    hmap.xaxis.set_ticklabels(hmap.xaxis.get_ticklabels(), rotation=30, ha='right')
+    plt.ylabel('True')
+    plt.xlabel('Predicted')
+    plt.savefig('confusion_matrix.png')
 
-## TRAIN
-history = defaultdict(list)
-best_accuracy = 0
-for epoch in tqdm(range(EPOCHS)):
 
-    train_acc, train_loss = train_epoch(model, train_dataloader, optimizer, device, len(train_dataloader.dataset))
-    val_acc, val_loss = eval_model(model, eval_dataloader, device, len(eval_dataloader.dataset))
+if __name__ == "__main__":
 
-    history['train_acc'].append(train_acc)
-    history['train_loss'].append(train_loss)
-    history['val_acc'].append(val_acc)
-    history['val_loss'].append(val_loss)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print('Device: ' + str(device))
+    model = model_def_full.ElectraClassifier()
+    model = model.to(device)
 
-    if val_acc > best_accuracy:
-        torch.save(model.state_dict(), 'best_model_state.bin')
-        best_accuracy = val_acc
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    loss_fn = nn.CrossEntropyLoss().to(device)
 
-save_history(history)
-## predict ##
-y_pred, y_pred_probs, y_test = get_predictions(model,test_dataloader)
-# save classification report
-cr=pd.DataFrame(classification_report(y_test, y_pred, digits=4, output_dict=True))
-cr.to_csv('classification_report.csv')
+    tokenizer = AutoTokenizer.from_pretrained('google/electra-small-discriminator')
+    train_dataloader = create_dataloader(df_train, tokenizer, 200, b_size)
+    test_dataloader = create_dataloader(df_test, tokenizer, 200, b_size)
+    eval_dataloader = create_dataloader(df_eval, tokenizer, 200, b_size)
 
-# save_confusion_matrix(y_test, y_pred)
-plt.figure(figsize=(10,8))
-confusion_matrix = confusion_matrix(y_test, y_pred)
-hmap = sns.heatmap(confusion_matrix, annot=True, fmt="d", cmap="Blues")
-hmap.yaxis.set_ticklabels(hmap.yaxis.get_ticklabels(), rotation=0, ha='right')
-hmap.xaxis.set_ticklabels(hmap.xaxis.get_ticklabels(), rotation=30, ha='right')
-plt.ylabel('True')
-plt.xlabel('Predicted')
-plt.savefig('confusion_matrix.png')
+    print('Batch size: ' + str(next(iter(eval_dataloader))['targets'].shape[0]))
+    print('Learning rate: ' + str(learning_rate))
+    print('Epochs: ' + str(EPOCHS))
 
-# print f1 score
-print('F1 score: ', f1_score(y_test, y_pred, average='macro'))
+    ## TRAIN
+    history = defaultdict(list)
+    best_accuracy = 0
+    for epoch in tqdm(range(EPOCHS)):
+
+        train_acc, train_loss = train_epoch(model, train_dataloader, optimizer, device, len(train_dataloader.dataset))
+        val_acc, val_loss = eval_model(model, eval_dataloader, device, len(eval_dataloader.dataset))
+
+        history['train_acc'].append(train_acc)
+        history['train_loss'].append(train_loss)
+        history['val_acc'].append(val_acc)
+        history['val_loss'].append(val_loss)
+
+        if val_acc > best_accuracy:
+            torch.save(model.state_dict(), 'best_model_state.bin')
+            best_accuracy = val_acc
+
+    # save history
+    save_history(history)
+
+    ## predict ##
+    y_pred, y_pred_probs, y_test = get_predictions(model,test_dataloader)
+
+    # save classification report
+    pd.DataFrame(classification_report(y_test, y_pred, digits=4, output_dict=True)).to_csv('classification_report.csv')
+
+    # save confusion matrix
+    save_confusion_matrix(y_test, y_pred)
+
+    # print f1 score
+    print('F1 score: ', f1_score(y_test, y_pred, average='macro'))

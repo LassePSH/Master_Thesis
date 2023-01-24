@@ -14,7 +14,7 @@ class ElectraClassifier(nn.Module):
         self.dropout_txt = nn.Dropout(self.electra.config.hidden_dropout_prob)
 
         # network features
-        self.network_input = nn.Linear(in_features=7,out_features=256) # 7 network features 
+        self.network_input = nn.Linear(in_features=7,out_features=256) # 7 network features
         self.dropout_net = nn.Dropout()
 
         # combined features
@@ -47,8 +47,7 @@ class ElectraClassifier(nn.Module):
 
         # output layer
         logits = self.out_proj(x)
-        sm = nn.Softmax(dim=1)
-        return sm(logits)
+        return logits
 
     def forward(self, input_ids=None,attention_mask=None,network_features=None):
         discriminator_hidden_states = self.electra(input_ids=input_ids,attention_mask=attention_mask)
