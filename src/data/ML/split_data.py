@@ -12,7 +12,7 @@ else:
     full = False
 
 # Load Data
-p = '/home/pelle/Master_Thesis/data/raw/wallstreetbets/graph_features_2/'
+p = '/home/pelle/Master_Thesis/data/raw/wallstreetbets/network_features/'
 file_names=os.listdir(p)
 
 data = []
@@ -27,7 +27,8 @@ df=df_balanced.join(df_gf.set_index('id'),on='id')
 # df.dropna(subset='degree',inplace=True)
 df=df[['author', 'date', 'score', 'n_comments', 'id',
        'n_awards', 'text_title', 'degree_cen', 'close_cen', 
-       'activity', 'degree', 'N_nodes', 'N_edges','mentions']]
+       'activity', 'degree', 'N_nodes', 'N_edges','mentions',
+       'frac_rec',	'N_rec',	'degree_in',	'degree_out',	'N_rec_author']]
 
 df.loc[df.n_awards==0,'awarded']=0
 df.loc[df.n_awards!=0,'awarded']=1
@@ -68,6 +69,14 @@ df['degree'] = df['degree'].apply(lambda x: x/df['degree'].max())
 df['N_nodes'] = df['N_nodes'].apply(lambda x: x/df['N_nodes'].max())
 df['N_edges'] = df['N_edges'].apply(lambda x: x/df['N_edges'].max())
 df['mentions'] = df['mentions'].apply(lambda x: x/df['mentions'].max())
+df['frac_rec'] = df['frac_rec'].apply(lambda x: x/df['frac_rec'].max())
+df['N_rec'] = df['N_rec'].apply(lambda x: x/df['N_rec'].max())
+df['degree_in'] = df['degree_in'].apply(lambda x: x/df['degree_in'].max())
+df['degree_out'] = df['degree_out'].apply(lambda x: x/df['degree_out'].max())
+df['N_rec_author'] = df['N_rec_author'].apply(lambda x: x/df['N_rec_author'].max())
+
+# drop na
+df.dropna(inplace=True)
 
 # shuffle order of df
 df = df.sample(frac = 1)

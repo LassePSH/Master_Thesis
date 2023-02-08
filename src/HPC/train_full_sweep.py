@@ -27,7 +27,9 @@ df_eval = pd.read_csv('~/data/eval_full.csv')
 # create dataloader
 def create_dataloader(df, tokenizer, max_len, batch_size):
     ds = Dataset(
-    network_features=df[['degree_cen', 'close_cen', 'activity', 'degree', 'N_nodes', 'N_edges','mentions','sentiment_compound','text_length']].to_numpy(),
+    network_features=df[['degree_cen', 'close_cen', 'activity', 'degree', 
+                        'N_nodes', 'N_edges','mentions','sentiment_compound','text_length',
+                        'frac_rec','N_rec','degree_in','degree_out','N_rec_author']].to_numpy(),
     texts=df["text_title"].to_numpy(),
     targets=df['awarded'].to_numpy(),
     tokenizer=tokenizer,
@@ -86,6 +88,10 @@ def main_train():
     b_size = run.config.batch_size
     EPOCHS = run.config.epochs
 
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model = model_def_full.ElectraClassifier()
+    model = model.to(device)
+
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
     loss_fn = nn.CrossEntropyLoss().to(device)
 
@@ -101,10 +107,10 @@ def main_train():
 
         wandb.log(
                 {
-                    "Training_loss": train_loss,
-                    "Validation_loss": val_loss,
-                    "Training_accuracy": train_acc,
-                    "Validation_accuracy": val_acc,
+                    "train_loss": train_loss,
+                    "val_loss": val_loss,
+                    "train_acc": train_acc,
+                    "val_acc": val_acc,
                 })
 
         if val_acc > best_accuracy:
@@ -113,13 +119,13 @@ def main_train():
 if __name__ == "__main__":
 
     sweep_configuration = {
-    'method': 'random',
-    'name': 'sweep',
+    'method': 'bayes',
+    'name': 'full_smaller_model',
     'metric': {'goal': 'maximize', 'name': 'val_acc'},
     'parameters': 
     {
         'batch_size': {'values': [16, 32, 64, 128]},
-        'epochs': {'max': 50, 'min': 5},
+        'epochs': {'max': 80, 'min': 10},
         'lr': {'max': 0.1, 'min': 0.0001}
      }}
 
@@ -127,11 +133,4 @@ if __name__ == "__main__":
     key = 'e8d70bdabfe211a4d6306b5d0a8db41f77ebf3bd'
     wandb.login(key=key)
     sweep_id = wandb.sweep(sweep=sweep_configuration, project='reputation')
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print('Device: ' + str(device))
-    model = model_def_full.ElectraClassifier()
-    model = model.to(device)
-
-
-    wandb.agent(sweep_id, function=main_train, count=4)
+    wandb.agent(sweep_id, function=main_train, count=20)

@@ -20,8 +20,8 @@ from dataset_def import Dataset
 
 # init
 b_size = 64
-EPOCHS = 50
-learning_rate = 0.001
+EPOCHS = 80
+learning_rate = 0.048
 
 # load data
 df_train = pd.read_csv('~/data/train_full.csv')
@@ -37,7 +37,9 @@ print('Total data: ' + str(len(df_train) + len(df_eval) + len(df_test)))
 def create_dataloader(df, tokenizer, max_len, batch_size):
 
     ds = Dataset(
-    network_features=df[['degree_cen', 'close_cen', 'activity', 'degree', 'N_nodes', 'N_edges','mentions','sentiment_compound','text_length']].to_numpy(),
+    network_features=df[['degree_cen', 'close_cen', 'activity', 'degree', 'N_nodes', 
+                            'N_edges','mentions','sentiment_compound','text_length',
+                            'frac_rec','N_rec','degree_in','degree_out','N_rec_author']].to_numpy(),
     texts=df["text_title"].to_numpy(),
     targets=df['awarded'].to_numpy(),
     tokenizer=tokenizer,
@@ -132,31 +134,36 @@ def save_history(history):
     plt.figure(figsize=(10,8))
     plt.plot(train_acc, label='train accuracy')
     plt.plot(val_acc, label='validation accuracy')
-    plt.title('Training history')
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epoch')
-    plt.legend()
+    plt.title('Training history', fontsize=23)
+    plt.ylabel('Accuracy', fontsize=20)
+    plt.xlabel('Epoch', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.legend(fontsize=20)
     plt.savefig('history_acurracy.png')
     plt.show()
 
     plt.figure(figsize=(10,8))
     plt.plot(train_loss, label='train loss')
     plt.plot(vall_loss, label='validation loss')
-    plt.title('Training history')
-    plt.ylabel('Loss')
-    plt.xlabel('Epoch')
-    plt.legend()
+    plt.title('Training history', fontsize=23)
+    plt.ylabel('Loss', fontsize=20)
+    plt.xlabel('Epoch', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.legend(fontsize=20)
     plt.savefig('history_loss.png')
     plt.show()
 
 def save_confusion_matrix(y_test, y_pred):
     plt.figure(figsize=(10,8))
     cm = confusion_matrix(y_test, y_pred)
-    hmap = sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-    hmap.yaxis.set_ticklabels(hmap.yaxis.get_ticklabels(), rotation=0, ha='right')
-    hmap.xaxis.set_ticklabels(hmap.xaxis.get_ticklabels(), rotation=30, ha='right')
-    plt.ylabel('True')
-    plt.xlabel('Predicted')
+    sns.heatmap(cm, annot=True, fmt='d',cmap='Blues', cbar=False, annot_kws={"size": 20})
+    plt.xticks([0.5,1.5], ['No Award', 'Award'], fontsize=20)
+    plt.yticks([0.5,1.5], ['No Award', 'Award'],fontsize=20)
+    plt.xlabel('Predicted', fontsize=20)
+    plt.ylabel('Actual', fontsize=20)
+    plt.title('Confusion Matrix', fontsize=23)
     plt.savefig('confusion_matrix.png')
 
 

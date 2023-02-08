@@ -7,8 +7,8 @@ class ElectraClassifier(nn.Module):
         super(ElectraClassifier,self).__init__()
         self.num_labels = num_labels
 
-        # network features
-        self.network_input = nn.Linear(in_features=9,out_features=256) # 9 network features
+        # network + text features
+        self.network_input = nn.Linear(in_features=14,out_features=256)
         self.dense_net2 = nn.Linear(in_features=256,out_features=512)
         self.dense_net3 = nn.Linear(in_features=512,out_features=1024)
         self.dense_net4 = nn.Linear(in_features=1024,out_features=2048)
@@ -29,5 +29,4 @@ class ElectraClassifier(nn.Module):
         x_net = F.relu(self.dense_net7(x_net))
 
         logits = self.out_proj(x_net)
-        
-        return F.softmax(logits,dim=1)
+        return logits

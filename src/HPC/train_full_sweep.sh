@@ -4,7 +4,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J testjob
+#BSUB -J TrainFullSweep
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 2
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -19,8 +19,8 @@
 ##BSUB -u your_email_address
 ### -- Specify the output and error file. %J is the job-id --
 ### -- -o and -e mean append, -oo and -eo mean overwrite --
-#BSUB -o log.out
-#BSUB -e log.err
+###BSUB -o log.out
+###BSUB -e log.err
 # -- end of LSF options --
 
 nvidia-smi

@@ -4,7 +4,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J testjob
+#BSUB -J Train
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 2
 ### -- Select the resources: 1 gpu in exclusive process mode --

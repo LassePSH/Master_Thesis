@@ -14,12 +14,12 @@ class ElectraClassifier(nn.Module):
         self.dropout_txt = nn.Dropout(self.electra.config.hidden_dropout_prob)
 
         # combined features
-        self.dense_cat1 = nn.Linear(in_features=(256+7),out_features=512) # 256 from text features + 7 from network features 
+        self.dense_cat1 = nn.Linear(in_features=(256+12),out_features=512) # 256 from text features + 12 from network features 
         self.dense_cat2 = nn.Linear(in_features=512,out_features=1024)
         self.dense_cat3 = nn.Linear(in_features=1024,out_features=2048)
-        self.dense_cat4 = nn.Linear(in_features=2048,out_features=1024)
-        self.dense_cat5 = nn.Linear(in_features=1024,out_features=512)
-        self.dense_cat6 = nn.Linear(in_features=512,out_features=256)
+        self.dense_cat6 = nn.Linear(in_features=2048,out_features=1024)
+        self.dense_cat7 = nn.Linear(in_features=1024,out_features=512)
+        self.dense_cat8 = nn.Linear(in_features=512,out_features=256)
 
         # output layer
         self.out_proj = nn.Linear(256, self.num_labels) # 2 labels
@@ -35,9 +35,9 @@ class ElectraClassifier(nn.Module):
         x = F.relu(self.dense_cat1(x))
         x = F.relu(self.dense_cat2(x))
         x = F.relu(self.dense_cat3(x))
-        x = F.relu(self.dense_cat4(x))
-        x = F.relu(self.dense_cat5(x))
         x = F.relu(self.dense_cat6(x))
+        x = F.relu(self.dense_cat7(x))
+        x = F.relu(self.dense_cat8(x))
 
         # output layer
         logits = self.out_proj(x)
@@ -47,4 +47,5 @@ class ElectraClassifier(nn.Module):
         discriminator_hidden_states = self.electra(input_ids=input_ids,attention_mask=attention_mask)
         sequence_output = discriminator_hidden_states[0]
         logits = self.classifier(sequence_output,network_features)
-        return F.softmax(logits,dim=1)
+
+        return logits
