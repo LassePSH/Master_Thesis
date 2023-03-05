@@ -78,9 +78,6 @@ target/
 # exclude data from source control by default
 /data/
 
-# Figures
-/reports/figures/
-
 # ssh scripts
 src/Heisenberg_SSH/*.csv
 
