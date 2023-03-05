@@ -1,0 +1,20 @@
+\begin{table}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrrrrrrrrrrr@{}}
+\toprule
+subreddit           & period                  & $A$   & $N$  & $E$  & $\overline{W}$ & $W_{\mu}$ & $\overline{D}$ & $D_{\mu}$ & $\overline{C}$ & $\overline{A}$ & $\overline{\D t}$ & $R$  & $R_{\%}$ & $P_{C}$ \\ \midrule
+FourSentenceStories & 2021-05-04 - 2021-12-28 & 200   & 34   & 28   & 2.679          & 1.0       & 1.647          & 1.0       & 0.275          & 5.824          & 19                & 15   & 0.429    & 0.023   \\
+Trump666            & 2020-03-16 - 2022-01-01 & 6746  & 755  & 1628 & 2.653          & 1.0       & 4.313          & 2.0       & 0.203          & 7.910          & 53                & 1048 & 0.493    & 0.000   \\
+GraphTheory         & 2015-02-17 - 2021-12-26 & 497   & 247  & 163  & 1.718          & 1.0       & 1.320          & 1.0       & 0.016          & 2.012          & 59                & 124  & 0.564    & 0.286   \\
+jazznoir            & 2015-01-01 - 2022-01-01 & 4725  & 1497 & 1139 & 1.474          & 1.0       & 1.522          & 1.0       & 0.010          & 2.986          & 122               & 640  & 0.453    & 0.016   \\
+indoorbouldering    & 2017-08-23 - 2022-01-01 & 10532 & 2529 & 4866 & 1.665          & 1.0       & 3.848          & 2.0       & 0.062          & 3.967          & 112               & 3487 & 0.532    & 0.000   \\
+DTU                 & 2015-05-15 - 2022-01-01 & 2788  & 689  & 1196 & 1.805          & 1.0       & 3.472          & 2.0       & 0.064          & 4.046          & 136               & 1014 & 0.600    & 0.000   \\
+kiwi\_bird          & 2015-02-21 - 2021-12-27 & 862   & 302  & 301  & 1.595          & 1.0       & 1.993          & 1.0       & 0.048          & 2.778          & 65                & 128  & 0.358    & 0.085   \\ \bottomrule
+\end{tabular}%
+}
+\caption{
+$A$ (Activity) is the total sum of posts and comments on the subreddit. $\overline{A}$ is the average activity across all authors. $N$ is the number of nodes/authors. $E$ is the number of edges. $\overline{W}$ is the average weight of the edges. $\overline{\Delta t}$ is the average time period of the users. $R$ is the number of reciprocal edges and $R_{P}$ is the proportion of reciprocal edges (Eq \ref{reciprocal_edges}). $\overline{D}$ is the average degree. $P_C$ is the p-value of the average cluster coefficient being different from the double-edged swapped graphs (equation \ref{c_pvalue}). 
+}
+\label{tab:my-table}
+\end{table}
