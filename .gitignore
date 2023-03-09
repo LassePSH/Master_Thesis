@@ -78,8 +78,13 @@ target/
 # exclude data from source control by default
 /data/
 
+# Figures
+# /reports/figures/
+/reports/figures
+
 # ssh scripts
 src/Heisenberg_SSH/*.csv
+src/data/*.csv
 
 # Mac OS-specific storage files
 .DS_Store

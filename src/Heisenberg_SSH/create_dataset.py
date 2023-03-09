@@ -18,6 +18,7 @@ df_post=df_post.dropna(subset=['author'])
 df_post['subreddit']='wallstreetbets'
 df_post.rename(columns={'created_utc':'date','num_comments':'n_comments','selftext':'text','id':'id','award_count':'n_awards'},inplace=True)
 df_post = df_post[['author','date','score','n_comments','title','text','id','n_awards','subreddit']]
+df_post['awarded'] = df_post['n_awards'].apply(lambda x: 1 if x>0 else 0)
 print('Posts loaded')
 
 df_comments = pd.read_csv('comments_pmaw_2016-2021_wsb.csv',usecols=['author','parent_author','created_utc','body'])
@@ -28,10 +29,10 @@ df_comments=df_comments.dropna(subset=['author','parent_author'])
 df_comments.created_utc = pd.to_datetime(df_comments.created_utc,unit='s')
 print('Comments loaded')
 
-df_post_balanced = pd.read_csv('balanced_data_chunked10.csv')
+df_post_balanced = pd.read_csv('true_balanced_data_chunked10.csv')
 df_post_balanced = df_post_balanced[df_post_balanced['author'] != '[deleted]']
 df_post_balanced=df_post_balanced[df_post_balanced.author!='AutoModerator']
-print('balanced_data_chunked10.csv')
+print('true_balanced_data_chunked10.csv')
 print('Balanced loaded')
 
 def degree_centrality(degree,N):
@@ -53,6 +54,9 @@ def get_graph_WSB(pre_date,date,author,id):
     # reciprocal edges for directed graph
     N_rec=len([e for e in G_di.edges if G_di.has_edge(e[1], e[0])])
     frac_rec = N_rec/N_edges
+
+    # previus awarded
+    prev_N_awarded = df_post.loc[df_post['author']==author].loc[df_post['date'] < date].awarded.sum()
 
     if author in df_comments_sub['author'].values or author in df_comments_sub['parent_author'].values:
         # undirected graph
@@ -81,7 +85,7 @@ def get_graph_WSB(pre_date,date,author,id):
     
     activity = len(df_comments_sub.loc[df_comments_sub['author']==author]) + len(df_post_sub.loc[df_post_sub['author']==author])
 
-    return [degree_cen, close_cen,activity,degree, N_nodes, N_edges,mentions,sum_mentions,id,frac_rec,N_rec,degree_in,degree_out,N_rec_author]
+    return [degree_cen, close_cen,activity,degree, N_nodes, N_edges,mentions,sum_mentions,id,frac_rec,N_rec,degree_in,degree_out,N_rec_author,prev_N_awarded]
 
 if __name__ == '__main__':
     
@@ -89,7 +93,14 @@ if __name__ == '__main__':
     print('Chunk size of data: ' + str(len(df_post_balanced.loc[df_post_balanced['chunk'] == N_c])/len(df_post_balanced)))
     df_post_balanced = df_post_balanced.loc[df_post_balanced['chunk'] == N_c]
 
-    col_names = ['degree_cen', 'close_cen','activity','degree', 'N_nodes', 'N_edges','mentions','sum_mentions','id','frac_rec','N_rec','degree_in','degree_out','N_rec_author']
+    col_names = ['degree_cen', 'close_cen',
+                 'activity','degree', 
+                 'N_nodes', 'N_edges',
+                 'mentions','sum_mentions',
+                 'id','frac_rec',
+                 'N_rec','degree_in',
+                 'degree_out','N_rec_author',
+                 'prev_N_awarded']
 
     print('Computing graph features..')
 
@@ -99,7 +110,7 @@ if __name__ == '__main__':
     id = df_post_balanced['id'].values
 
 
-    file_name = 'graph_features_chunk_' + str(N_c) + '.csv'
+    file_name = 'true_graph_features_chunk_' + str(N_c) + '.csv'
     df_out=pd.DataFrame(columns=col_names)
     df_out.to_csv(file_name,index=False,header=True)
     
@@ -114,8 +125,6 @@ if __name__ == '__main__':
 
 
 print('Done!')
-    
-
 
 
 
